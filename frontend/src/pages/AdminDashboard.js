@@ -654,7 +654,7 @@ function AdminDashboard() {
               <div className="mt-4 text-center">
                 <Link 
                   to="/admin/reports"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
                 >
                   View All Reports
                 </Link>
@@ -701,14 +701,14 @@ function AdminDashboard() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto">
+      <div className="bg-gradient-to-r from-green-200 to-green-300 flex-1 overflow-auto">
         {/* Top navigation */}
         <div className="bg-white shadow-sm sticky top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
               <div className="flex">
                 <div className="flex-shrink-0 flex items-center">
-                  <h1 className="text-xl font-bold text-gray-900">SkillBridge Admin</h1>
+                  <h1 className="text-xl font-bold text-gray-900">Learnora Pannel</h1>
                 </div>
               </div>
               <div className="flex items-center">
@@ -743,7 +743,7 @@ function AdminDashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Dashboard header */}
             <div className="pb-5 border-b border-gray-200 mb-5 flex items-center justify-between">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl">Dashboard Overview</h2>
+              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl">Admin Dashboard</h2>
               <div className="flex">
                 <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                   Active

@@ -111,7 +111,7 @@ function GroupCard({ group, onUpdate, onDelete }) {
         <div className="px-4 py-3 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50">
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200"
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors duration-200"
             title="Edit group"
             disabled={loading}
           >

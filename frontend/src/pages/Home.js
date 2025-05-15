@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import CreatePost from "../components/CreatePost";
-import Post from "../components/Post";
-import Header from "../components/Header";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
+import CreatePost from "../components/CreatePost"; // Import CreatePost component
+import Post from "../components/Post"; // Import Post component
 import axiosInstance from "../utils/axios";
-import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [posts, setPosts] = useState([]);
@@ -11,9 +10,9 @@ function Home() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch user data
   const fetchUserData = async () => {
     try {
-      // Check for stored user data instead of just the token
       const userData = localStorage.getItem("user");
       if (!userData) {
         navigate("/login");
@@ -22,10 +21,6 @@ function Home() {
 
       const user = JSON.parse(userData);
       setUser(user);
-      
-      // Optionally validate token on backend or refresh user data
-      // const response = await axiosInstance.get("/api/users/me");
-      // setUser(response.data);
     } catch (error) {
       console.error("Error fetching user data:", error);
       localStorage.removeItem("user");
@@ -33,7 +28,7 @@ function Home() {
     }
   };
 
-  // Add debug function to inspect CreatePost issues
+  // Debugging function for Create Post
   const debugCreatePost = (formData) => {
     console.group("Create Post Debug Info");
     console.log("User ID:", user?.id);
@@ -41,23 +36,20 @@ function Home() {
     console.log("Form data:", formData);
     console.groupEnd();
     
-    // Return user information for post creation
     return {
       userId: user?.id,
       token: localStorage.getItem("token")
     };
   };
 
+  // Fetch posts data
   const fetchPosts = async () => {
     try {
       console.log("Fetching posts...");
       const response = await axiosInstance.get("/api/posts");
       console.log("Posts API response:", response.data);
-      
-      // Process posts to ensure user information is correctly displayed
+
       const processedPosts = response.data.map(post => {
-        // If the post doesn't have userName or has "Deleted User" as userName,
-        // try to derive the name from userFirstName and userLastName fields
         if (!post.userName || post.userName === "Deleted User") {
           if (post.userFirstName || post.userLastName) {
             post.userName = `${post.userFirstName || ''} ${post.userLastName || ''}`.trim();
@@ -65,34 +57,31 @@ function Home() {
         }
         return post;
       });
-      
+
       setPosts(processedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
-      if (error.response) {
-        console.error("Response status:", error.response.status);
-        console.error("Response data:", error.response.data);
-      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetching posts and user data on component mount
   useEffect(() => {
     fetchUserData();
     fetchPosts();
   }, []);
 
+  // Handle new post creation
   const handlePostCreated = (newPost) => {
     console.log("New post created:", newPost);
-    
+
     if (!newPost || typeof newPost !== 'object') {
       console.error("Invalid post object returned:", newPost);
       alert("Failed to create post: Invalid response format");
       return;
     }
-    
-    // Ensure the new post has correct user information
+
     if (!newPost.userName || newPost.userName === "Deleted User") {
       const currentUser = JSON.parse(localStorage.getItem("user"));
       if (currentUser) {
@@ -100,47 +89,45 @@ function Home() {
         console.log("Updated post with user name:", newPost.userName);
       }
     }
-    
-    // Ensure post has an id before adding to state
+
     if (!newPost.id) {
       console.warn("Created post missing ID, generating temporary ID");
       newPost.id = `temp-${Date.now()}`;
     }
-    
+
     setPosts(prevPosts => [newPost, ...prevPosts]);
     console.log("Posts state updated. Total posts:", posts.length + 1);
-    
-    // Refresh posts from server to ensure consistency
+
     setTimeout(() => {
       fetchPosts();
     }, 1000);
   };
 
+  // Handle post deletion
   const handlePostDeleted = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
 
+  // Handle post update
   const handlePostUpdated = (updatedPost) => {
     setPosts(
       posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
     );
   };
 
+  // Show loading spinner while posts are being fetched
   if (loading) {
     return (
-      <>
-        
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </>
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
+      </div>
     );
   }
 
   return (
-    <>
-     
+    <div className="bg-green-100 text-gray-900 min-h-screen"> {/* Light green background */}
       <div className="max-w-2xl mx-auto py-8 px-4">
+        {/* CreatePost component */}
         <CreatePost 
           onPostCreated={handlePostCreated} 
           debugFn={debugCreatePost}
@@ -156,12 +143,12 @@ function Home() {
             />
           ))
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="bg-white text-black rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-600">No posts available. Be the first to create a post!</p>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

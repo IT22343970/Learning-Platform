@@ -176,12 +176,12 @@ function CreatePost({ onPostCreated }) {
   }, [previewUrls, videoPreviewUrl]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+    <div className="bg-white rounded-lg shadow-md p-4 mb-4 text-black">
       <h2 className="text-xl font-semibold mb-4">Create Post</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit}>
         <textarea
-          className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-green-500 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
           rows="3"
           placeholder="What's on your mind?"
           value={content}
@@ -219,7 +219,7 @@ function CreatePost({ onPostCreated }) {
                 disabled={!!video || isLoading}
               />
               <svg
-                className="w-8 h-8 text-blue-500 hover:text-blue-600"
+                className="w-8 h-8 text-green-500 hover:text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -248,7 +248,7 @@ function CreatePost({ onPostCreated }) {
                 disabled={images.length > 0 || isLoading}
               />
               <svg
-                className="w-8 h-8 text-blue-500 hover:text-blue-600"
+                className="w-8 h-8 text-green-500 hover:text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -270,7 +270,7 @@ function CreatePost({ onPostCreated }) {
               ${
                 isLoading || (!content && !video && images.length === 0)
                   ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
+                  : "bg-green-500 hover:bg-green-600"
               }`}
           >
             {isLoading ? "Posting..." : "Post"}
@@ -282,7 +282,7 @@ function CreatePost({ onPostCreated }) {
       {isLoading && progress > 0 && (
         <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
           <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-300"
+            className="h-full bg-green-500 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           ></div>
           <p className="text-sm text-center mt-1">Uploading: {progress}%</p>

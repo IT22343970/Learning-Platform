@@ -18,6 +18,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import backgroundImage from "../assets/nick-morrison-FHnnjk1Yj7Y-unsplash.jpg"; // Importing the background image
 
 function Register() {
   const navigate = useNavigate();
@@ -79,14 +80,15 @@ function Register() {
 
   return (
     <Box
-      sx={{
-        display: 'flex',
-        height: '100vh',
-        background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-      }}
+          sx={{
+            display: 'flex',
+            height: '100vh',
+            background: `url(${backgroundImage}) no-repeat center center fixed`, // Corrected background image path
+            backgroundSize: 'cover',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+          }}
     >
       <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center' }}>
         <Paper 
@@ -102,20 +104,20 @@ function Register() {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              fontWeight="bold"
-              sx={{
-                background: 'linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 1
-              }}
-            >
-              SkillBridge
-            </Typography>
-            <Typography variant="subtitle1" color="textSecondary">
+                      <Typography 
+                        variant="h4" 
+                        component="h1" 
+                        fontWeight="bold"
+                        sx={{
+                          background: 'linear-gradient(45deg,rgb(0, 0, 0),rgb(54, 54, 54),rgb(102, 102, 102),rgb(104, 102, 103),rgb(153, 153, 153),rgb(189, 189, 189))',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          mb: 1
+                        }}
+                      >
+                        Learnora
+                      </Typography>
+                      <Typography variant="subtitle1" color="textSecondary">
               Create your account to get started
             </Typography>
           </Box>
@@ -150,7 +152,7 @@ function Register() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonIcon color="primary" />
+                    <PersonIcon color="green" />
                   </InputAdornment>
                 ),
               }}
@@ -175,7 +177,7 @@ function Register() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonIcon color="primary" />
+                    <PersonIcon color="green" />
                   </InputAdornment>
                 ),
               }}
@@ -201,7 +203,7 @@ function Register() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailIcon color="primary" />
+                    <EmailIcon color="green" />
                   </InputAdornment>
                 ),
               }}
@@ -227,7 +229,7 @@ function Register() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LockIcon color="primary" />
+                    <LockIcon color="green" />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -258,7 +260,7 @@ function Register() {
                 mb: 2, 
                 py: 1.5, 
                 borderRadius: '10px',
-                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', 
+                background: 'linear-gradient(45deg, #4CAF50, #81C784)', // Green color
                 boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
                 transition: 'all 0.3s ease',
                 '&:hover': {

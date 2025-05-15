@@ -1,27 +1,17 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Typography, 
-  Paper, 
-  Divider, 
-  Container, 
-  InputAdornment, 
-  IconButton 
-} from "@mui/material";
+import { Box, Button, TextField, Typography, Paper, Divider, Container, InputAdornment, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axios";
-// Import icons for a better look
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { AuthContext } from "../context/AuthContext"; // Add this import
+import backgroundImage from "../assets/nick-morrison-FHnnjk1Yj7Y-unsplash.jpg"; // Importing the background image
+import { AuthContext } from "../context/AuthContext"; // Importing AuthContext here
 
 function Login() {
   const navigate = useNavigate();
-  const { setAuth } = useContext(AuthContext); // Add this line
+  const { setAuth } = useContext(AuthContext); // Use AuthContext to manage the auth state
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -38,7 +28,6 @@ function Login() {
         throw new Error("No credential received from Google");
       }
       
-      // Send the ID token to your backend
       const result = await axiosInstance.post("/api/auth/google", {
         idToken: response.credential
       });
@@ -53,16 +42,14 @@ function Login() {
     } finally {
       setLoading(false);
     }
-  }, [navigate, setAuth]); // Add setAuth to dependency array
+  }, [navigate, setAuth]);
 
   useEffect(() => {
-    // Clean up any existing Google script to prevent conflicts
     const existingScript = document.getElementById("google-signin-script");
     if (existingScript) {
       existingScript.remove();
     }
     
-    // Load Google's OAuth script
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.id = "google-signin-script";
@@ -71,11 +58,10 @@ function Login() {
     document.body.appendChild(script);
 
     script.onload = () => {
-      // Add a slight delay to ensure Google's API is fully loaded
       setTimeout(() => {
         if (window.google) {
           try {
-            window.google?.accounts.id.initialize({
+            window.google.accounts.id.initialize({
               client_id: "793547860619-hccacc9oqnrjiphbve9hkvbef24o6sji.apps.googleusercontent.com",
               callback: handleGoogleCallback,
               auto_select: false,
@@ -83,11 +69,12 @@ function Login() {
               context: 'signin',
               ux_mode: 'popup'
             });
-  
+
             window.google.accounts.id.renderButton(
               document.getElementById("googleSignInButton"),
               { 
                 theme: "outline", 
+                color_scheme: "gray",
                 size: "large", 
                 width: "100%",
                 text: "signin_with",
@@ -111,7 +98,6 @@ function Login() {
     };
 
     return () => {
-      // Clean up script when component unmounts
       const scriptToRemove = document.getElementById("google-signin-script");
       if (scriptToRemove) {
         scriptToRemove.remove();
@@ -151,7 +137,8 @@ function Login() {
       sx={{
         display: 'flex',
         height: '100vh',
-        background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', // Instagram gradient background
+        background: `url(${backgroundImage}) no-repeat center center fixed`, // Corrected background image path
+        backgroundSize: 'cover',
         justifyContent: 'center',
         alignItems: 'center',
         padding: '20px',
@@ -165,7 +152,7 @@ function Login() {
             borderRadius: '15px',
             boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
             backdropFilter: 'blur(5px)',
-            background: 'rgba(255, 255, 255, 0.97)',
+            background: 'rgb(255, 255, 255)',
             width: '100%',
             maxWidth: '450px'
           }}
@@ -176,13 +163,13 @@ function Login() {
               component="h1" 
               fontWeight="bold"
               sx={{
-                background: 'linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D)',
+                background: 'linear-gradient(45deg,rgb(0, 0, 0),rgb(54, 54, 54),rgb(102, 102, 102),rgb(104, 102, 103),rgb(153, 153, 153),rgb(189, 189, 189))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 mb: 1
               }}
             >
-              SkillBridge
+              Learnora
             </Typography>
             <Typography variant="subtitle1" color="textSecondary">
               Sign in to continue to your account
@@ -216,16 +203,19 @@ function Login() {
               required
               variant="outlined"
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon color="primary" />
-                  </InputAdornment>
-                ),
+                startAdornment: <InputAdornment position="start"><EmailIcon color="green" /></InputAdornment>,
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: '10px',
-                }
+                  backgroundColor: 'transparent', // Transparent background
+                  borderRadius: '10px', 
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'black', // White label color
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)', // Transparent border with white color
+                },
               }}
             />
             
@@ -240,26 +230,26 @@ function Login() {
               required
               variant="outlined"
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon color="primary" />
-                  </InputAdornment>
-                ),
+                startAdornment: <InputAdornment position="start"><LockIcon color="green" /></InputAdornment>,
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
+                    <IconButton onClick={handleClickShowPassword} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                )
+                ),
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: '10px',
-                }
+                  backgroundColor: 'transparent', // Transparent background
+                  borderRadius: '10px', 
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'black', // White label color
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)', // Transparent border with white color
+                },
               }}
             />
             
@@ -273,7 +263,7 @@ function Login() {
                 mb: 2, 
                 py: 1.5, 
                 borderRadius: '10px',
-                background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', 
+                background: 'green', // Green color for the button
                 boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
@@ -303,31 +293,9 @@ function Login() {
               </Typography>
             </Box>
             
-            <Divider sx={{ my: 2 }}>
-              <Typography variant="body2" color="textSecondary">
-                OR
-              </Typography>
-            </Divider>
+            <Divider sx={{ my: 2 }} />
             
-            {/* Google Sign-In Button */}
-            <Box 
-              id="googleSignInButton" 
-              sx={{ 
-                width: "100%", 
-                mt: 1,
-                mb: 2,
-                '& > div': {
-                  borderRadius: '10px !important',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1) !important',
-                  width: '100% !important',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15) !important',
-                    transform: 'translateY(-1px)'
-                  }
-                }
-              }}
-            />
+            <Box id="googleSignInButton" sx={{ width: "100%", mt: 1, mb: 2 }} />
             
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">

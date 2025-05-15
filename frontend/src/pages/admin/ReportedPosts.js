@@ -20,7 +20,7 @@ function ReportedPosts() {
     rejected: 0
   });
   const [error, setError] = useState(null);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function ReportedPosts() {
           navigate("/");
           return;
         }
-        
+
         setUser(user);
         await fetchReportStats();
         await fetchReports(activeTab);
@@ -49,7 +49,7 @@ function ReportedPosts() {
     };
 
     checkAdminAccess();
-  }, [navigate]);
+  }, [navigate, activeTab]);
 
   const fetchReportStats = async () => {
     try {
@@ -74,14 +74,14 @@ function ReportedPosts() {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/api/reports/status/${status}`);
-      
+
       if (response?.data && Array.isArray(response.data)) {
         setReports(response.data);
-      
+
         const reportedPostIds = response.data
           .map(report => report.postId)
           .filter(id => id);
-        
+
         if (reportedPostIds.length > 0) {
           await fetchPostContent(reportedPostIds);
         }
@@ -97,14 +97,14 @@ function ReportedPosts() {
       setLoading(false);
     }
   };
-  
+
   const fetchPostContent = async (postIds) => {
     if (!postIds?.length) return;
-    
+
     try {
       const uniqueIds = [...new Set(postIds)];
       const content = {};
-      
+
       for (const id of uniqueIds) {
         try {
           const response = await axiosInstance.get(`/api/posts/${id}`);
@@ -118,7 +118,7 @@ function ReportedPosts() {
           content[id] = { error: 'Post not found or deleted' };
         }
       }
-      
+
       setPostContent(content);
     } catch (error) {
       console.error('Error fetching post content:', error);
@@ -130,17 +130,17 @@ function ReportedPosts() {
       fetchReports(activeTab);
     }
   }, [activeTab, user]);
-  
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-  
+
   const handleReportAction = async (action, reportId) => {
     if (!reportId || !user) return;
-    
+
     try {
       setProcessing(true);
-      
+
       if (action === 'delete') {
         await axiosInstance.delete(`/api/reports/${reportId}/post`, {
           data: {
@@ -155,7 +155,7 @@ function ReportedPosts() {
           adminNote: adminNote || 'Report was dismissed by admin.'
         });
       }
-      
+
       await fetchReportStats();
       await fetchReports(activeTab);
       setSelectedReport(null);
@@ -167,14 +167,14 @@ function ReportedPosts() {
       setProcessing(false);
     }
   };
-  
+
   const togglePostContent = (reportId) => {
     setExpanded(prev => ({
       ...prev,
       [reportId]: !prev[reportId]
     }));
   };
-  
+
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown date";
     try {
@@ -183,12 +183,12 @@ function ReportedPosts() {
       return "Invalid date";
     }
   };
-  
+
   const getReasonClass = (reason) => {
     if (!reason) return 'bg-gray-100 text-gray-800';
-    
+
     const reasonStr = String(reason).toLowerCase();
-    
+
     if (reasonStr.includes('inappropriate')) {
       return 'bg-purple-100 text-purple-800';
     } else if (reasonStr.includes('harass') || reasonStr.includes('bull')) {
@@ -208,7 +208,7 @@ function ReportedPosts() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-green-100">
         <AdminSidebar user={user} />
         <div className="flex-1 flex items-center justify-center">
           <div className="bg-white p-8 rounded shadow-md max-w-md w-full">
@@ -220,12 +220,12 @@ function ReportedPosts() {
             </div>
             <p className="text-gray-600 text-center">{typeof error === 'string' ? error : 'An error occurred'}</p>
             <div className="mt-6 text-center">
-              <button 
+              <button
                 onClick={() => {
                   setError(null);
                   fetchReports(activeTab);
                 }}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 Retry
               </button>
@@ -238,24 +238,24 @@ function ReportedPosts() {
 
   if (loading && reports.length === 0) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-green-100">
         <AdminSidebar user={user} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-green-100">
       <AdminSidebar user={user} />
-      
+
       <div className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Reported Posts</h1>
-            
+
             <div className="mt-4 md:mt-0 flex space-x-4">
               <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-100">
                 <span className="text-xs text-gray-500">Total</span>
@@ -275,7 +275,7 @@ function ReportedPosts() {
               </div>
             </div>
           </div>
-          
+
           <div className="mb-8 border-b border-gray-200">
             <div className="flex space-x-8">
               <button
@@ -315,7 +315,7 @@ function ReportedPosts() {
               </button>
             </div>
           </div>
-          
+
           {reports.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -323,7 +323,7 @@ function ReportedPosts() {
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">No {activeTab.toLowerCase()} reports</h3>
               <p className="mt-1 text-gray-500">
-                {activeTab === 'PENDING' 
+                {activeTab === 'PENDING'
                   ? 'There are no pending reports to review at this time.'
                   : activeTab === 'RESOLVED'
                   ? 'No reports have been resolved yet.'
@@ -335,10 +335,10 @@ function ReportedPosts() {
               <ul className="divide-y divide-gray-200">
                 {reports.map((report) => {
                   if (!report || typeof report !== 'object') return null;
-                  
+
                   const post = report.postId && postContent[report.postId];
                   const isExpanded = expanded[report.id];
-                  
+
                   return (
                     <li key={report.id || `report-${Math.random().toString(36).substr(2, 9)}`} className="hover:bg-gray-50 transition-colors duration-150">
                       <div className="px-6 py-4">
@@ -360,12 +360,12 @@ function ReportedPosts() {
                               </p>
                             </div>
                           </div>
-                          
+
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getReasonClass(report.reason)}`}>
                             {report.reason || "Not specified"}
                           </span>
                         </div>
-                        
+
                         <div className="mt-3 pl-13">
                           <div className="rounded-md bg-gray-50 p-3">
                             <p className="text-sm text-gray-700 whitespace-pre-line">
@@ -373,7 +373,7 @@ function ReportedPosts() {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="mt-4 pl-13">
                           <button
                             onClick={() => togglePostContent(report.id)}
@@ -384,7 +384,7 @@ function ReportedPosts() {
                             </svg>
                             {isExpanded ? 'Hide post content' : 'View post content'}
                           </button>
-                          
+
                           {isExpanded && (
                             <div className="mt-3 border border-gray-200 rounded-md p-4 bg-white">
                               {!post ? (
@@ -406,16 +406,16 @@ function ReportedPosts() {
                                       <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
                                     </div>
                                   </div>
-                                  
+
                                   <p className="text-sm text-gray-800 whitespace-pre-line">{post.content || "No content available"}</p>
-                                  
+
                                   {post.imageUrls && post.imageUrls.length > 0 && (
                                     <div className="mt-3 grid grid-cols-2 gap-2">
                                       {post.imageUrls.slice(0, 4).map((url, index) => (
                                         <div key={index} className="rounded-md overflow-hidden h-32 bg-gray-100">
-                                          <img 
-                                            src={url} 
-                                            alt={`Post image ${index + 1}`} 
+                                          <img
+                                            src={url}
+                                            alt={`Post image ${index + 1}`}
                                             className="h-full w-full object-cover"
                                             onError={(e) => {
                                               e.target.onerror = null;
@@ -436,24 +436,24 @@ function ReportedPosts() {
                             </div>
                           )}
                         </div>
-                        
+
                         {activeTab === 'PENDING' && (
                           <div className="mt-4 flex justify-end space-x-3">
                             <button
-                              onClick={() => setSelectedReport({...report, action: 'dismiss'})}
+                              onClick={() => setSelectedReport({ ...report, action: 'dismiss' })}
                               className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                               Dismiss Report
                             </button>
                             <button
-                              onClick={() => setSelectedReport({...report, action: 'delete'})}
-                              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              onClick={() => setSelectedReport({ ...report, action: 'delete' })}
+                              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
                               Delete Post
                             </button>
                           </div>
                         )}
-                        
+
                         {(activeTab === 'RESOLVED' || activeTab === 'REJECTED') && report.adminNote && (
                           <div className="mt-4 pl-13 border-t border-gray-100 pt-3">
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Admin Note</p>
@@ -469,26 +469,24 @@ function ReportedPosts() {
           )}
         </div>
       </div>
-      
+
       {selectedReport && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center px-4">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-                 onClick={() => !processing && setSelectedReport(null)}>
-            </div>
-            
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => !processing && setSelectedReport(null)}></div>
+
             <div className="relative bg-white rounded-lg max-w-md w-full mx-auto shadow-xl transform transition-all">
               <div className="p-6">
                 <div className="text-center">
                   <div className={`mx-auto flex items-center justify-center h-12 w-12 rounded-full ${
-                    selectedReport.action === 'delete' ? 'bg-red-100' : 'bg-yellow-100'
+                    selectedReport.action === 'delete' ? 'bg-red-100' : 'bg-green-100'
                   }`}>
                     {selectedReport.action === 'delete' ? (
                       <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     ) : (
-                      <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     )}
@@ -519,7 +517,7 @@ function ReportedPosts() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
@@ -534,7 +532,7 @@ function ReportedPosts() {
                     className={`inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                       selectedReport.action === 'delete'
                         ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                        : 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
+                        : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
                     }`}
                     onClick={() => handleReportAction(selectedReport.action, selectedReport.id)}
                     disabled={processing}

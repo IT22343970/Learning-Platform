@@ -381,7 +381,7 @@ function AdminUserManagement() {
                 <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
                 <Link 
                   to="/admin/users/add" 
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
                   Add New User
                 </Link>

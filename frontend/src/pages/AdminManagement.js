@@ -56,7 +56,7 @@ function AdminManagement() {
     return (
       <>
         <Header />
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen bg-green-500">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
       </>
@@ -66,8 +66,8 @@ function AdminManagement() {
   return (
     <>
       <Header />
-      <div className="max-w-4xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">User Management</h1>
+      <div className="max-w-4xl mx-auto p-4 bg-green-500 min-h-screen">
+        <h1 className="text-2xl font-bold mb-4 text-white">User Management</h1>
         
         {error && (
           <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
@@ -123,7 +123,7 @@ function AdminManagement() {
                     {user.role !== "ROLE_ADMIN" && (
                       <button
                         onClick={() => promoteToAdmin(user.id)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-white bg-green-500 hover:bg-green-700 px-4 py-2 rounded-lg"
                       >
                         Promote to Admin
                       </button>
