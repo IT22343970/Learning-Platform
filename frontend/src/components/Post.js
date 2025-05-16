@@ -1,3 +1,4 @@
+/** @jsxImportSource react */
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../utils/axios";
 import Comments from "./Comments";
@@ -20,6 +21,8 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(Date.now());
   const [showReportModal, setShowReportModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
@@ -35,14 +38,13 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
   const getFullUrl = (url) => {
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://")) return url;
-    return `${window.location.protocol}//${window.location.hostname}:8081${url}`;
+   return `${window.location.protocol}//${window.location.hostname}:8081${url}`;
   };
 
   const getMediaUrl = async (mediaId, originalUrl) => {
     try {
       const mediaType = post.mediaTypes && post.mediaTypes[mediaId];
-
-      const response = await axiosInstance.get(`/api/media/${mediaId}`, {
+     const response = await axiosInstance.get(`/api/media/${mediaId}`, {
         responseType: "blob",
       });
 
@@ -52,9 +54,7 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
         return URL.createObjectURL(response.data);
       }
 
-      console.warn(
-        `Invalid or empty media data for ${mediaId}, using fallback URL`
-      );
+      console.warn(`Invalid or empty media data for ${mediaId}, using fallback URL`);
       return getFullUrl(originalUrl);
     } catch (error) {
       console.error(`Error loading media ${mediaId}:`, error);
@@ -104,7 +104,7 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
 
   const refreshPostData = async () => {
     try {
-      const response = await axiosInstance.get(`/api/posts/${post.id}`);
+     const response = await axiosInstance.get(`/api/posts/${post.id}`);
       if (response.data) {
         setCommentCount(response.data.comments?.length || 0);
         onPostUpdated?.(response.data);
@@ -141,9 +141,9 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
     try {
       setDeleting(true);
       if (isUserAdmin && user.id !== post.userId) {
-        await axiosInstance.delete(`/api/posts/${post.id}?userId=${user.id}&isAdmin=true`);
+       await axiosInstance.delete(`/api/posts/${post.id}?userId=${user.id}&isAdmin=true`);
       } else {
-        await axiosInstance.delete(`/api/posts/${post.id}?userId=${user.id}`);
+      await axiosInstance.delete(`/api/posts/${post.id}?userId=${user.id}`);
       }
       onPostDeleted?.(post.id);
       setShowMenu(false);
@@ -216,12 +216,28 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
     console.log("Report submitted successfully");
   };
 
+  const handleNextImage = () => {
+    if (currentImageIndex < post.imageUrls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mb-6 overflow-hidden border border-green-500">
-      {/* Post Header with User Info and Options */}
-      <div className="flex items-center justify-between p-5 border-b border-gray-50">
+    <div className="bg-white rounded-3xl shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-fade-in">
+      {/* Post Header */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 p-0.5 shadow-md">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 p-0.5">
             <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               {post.userProfilePicture ? (
                 <img
@@ -231,32 +247,34 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                 />
               ) : (
                 <span className="text-lg font-semibold text-indigo-600">
-                  {post.userName?.charAt(0)}
+                  {post.userName?.charAt(0) || "U"}
                 </span>
               )}
             </div>
           </div>
-          <div>
-            <h3 className="font-medium text-gray-900">{post.userName || "Unknown User"}</h3>
-            <p className="text-xs text-gray-500 flex items-center">
-              <svg className="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatDate(post.createdAt)}
-            </p>
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-1">
+              <h3 className="text-base font-bold text-gray-900">{post.userName || "Unknown User"}</h3>
+              {isUserAdmin && (
+                <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
           </div>
         </div>
-
-        {/* Post Options Menu */}
         {user && (
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={deleting || updating}
+              aria-label="Post options"
             >
               <svg
-                className={`w-5 h-5 ${deleting || updating ? 'text-gray-300' : 'text-gray-500'}`}
+                className={`w-5 h-5 ${deleting || updating ? 'text-gray-300' : 'text-gray-600'}`}
+
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -270,13 +288,13 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
               </svg>
             </button>
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg z-50 overflow-hidden border border-green-500 transform transition-all duration-300 scale-100 origin-top-right">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200 animate-slide-in">
                 {user.id === post.userId && (
                   <button
                     onClick={handleEdit}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 flex items-center"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200 flex items-center"
                   >
-                    <svg className="w-4 h-4 mr-3 text-blue-500" fill="none" viewBox="currentColor">
+                    <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     Edit Post
@@ -286,11 +304,9 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
-                    className={`w-full text-left px-4 py-3 text-sm flex items-center ${
-                      deleting ? "text-gray-400 bg-gray-50" : "text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
-                    }`}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center ${deleting ? "text-gray-400" : "text-red-600 hover:bg-red-50"} transition-colors duration-200`}
                   >
-                    <svg className={`w-4 h-4 mr-3 ${deleting ? "text-gray-400" : "text-red-500"}`} fill="none" viewBox="currentColor">
+                   <svg className={`w-4 h-4 mr-2 ${deleting ? "text-gray-400" : "text-red-500"}`}  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     {deleting
@@ -302,9 +318,9 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                 ) : (
                   <button
                     onClick={() => setShowReportModal(true)}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200 flex items-center"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center"
                   >
-                    <svg className="w-4 h-4 mr-3 text-red-500" fill="none" viewBox="currentColor">
+                    <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     Report Post
@@ -316,36 +332,28 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
         )}
       </div>
 
-      {/* Post Content */}
-      <div className="px-5 py-4">
-        {isEditing ? (
+      {/* Post Media */}
+      {isEditing ? (
+        <div className="mb-4">
           <form onSubmit={handleUpdateSubmit} className="space-y-4">
-            <div className="relative">
-              <textarea
-                className="w-full p-4 border border-green-500 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-                rows="3"
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                disabled={updating}
-                placeholder="What's on your mind?"
-              />
-            </div>
-            
+            <textarea
+              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-900 placeholder-gray-500"
+              rows="4"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              disabled={updating}
+              placeholder="What's on your mind?"
+            />
             {editPreviewUrls.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {editPreviewUrls.map((url, index) => (
-                  <div key={index} className="relative group rounded-lg overflow-hidden shadow-sm border border-green-500">
-                    <img
-                      src={url}
-                      alt={`Preview ${index}`}
-                      className="h-24 w-full object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="relative">
+                <img
+                  src={editPreviewUrls[0]}
+                  alt="Preview"
+                  className="w-full aspect-[4/5] object-cover rounded-xl"
+                />
               </div>
             )}
-            
-            <div className="flex justify-between items-center pt-2">
+            <div className="flex justify-between items-center">
               <input
                 type="file"
                 multiple
@@ -357,19 +365,18 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
               />
               <label
                 htmlFor="edit-image-input"
-                className="flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md cursor-pointer transition-colors duration-200"
+                className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl cursor-pointer transition-colors duration-200 text-sm"
               >
-                <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" viewBox="currentColor">
+                <svg className="w-5 h-5 mr-2" fill hydrochlor="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Add Images
               </label>
-              
-              <div className="space-x-2">
+              <div className="space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors duration-200 font-medium"
+                  className="px-4 py-2 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                   disabled={updating}
                 >
                   Cancel
@@ -377,161 +384,169 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                 <button
                   type="submit"
                   disabled={updating || (!editContent.trim() && editImages.length === 0)}
-                  className={`px-6 py-2 rounded-md text-white font-medium shadow-sm transition-all duration-200 ${
+                  className={`px-4 py-2 rounded-xl text-white text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     updating || (!editContent.trim() && editImages.length === 0)
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 hover:shadow"
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
                   }`}
                 >
-                  {updating ? 
+                  {updating ? (
                     <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="currentColor">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
                       Updating...
-                    </span> : 
-                    "Save Changes"
-                  }
+                    </span>
+                  ) : (
+                    "Save"
+                  )}
                 </button>
               </div>
             </div>
           </form>
-        ) : (
-          <>
-            {/* Post Text Content */}
-            <p className="text-gray-800 mb-4 leading-relaxed whitespace-pre-line">{post.content}</p>
-            {/* Post Media Content */}
-            <div className="space-y-4 mt-3">
-              {post.videoUrl && (
-                <div className="rounded-lg overflow-hidden shadow-sm">
-                  <video
-                    src={mediaUrls.video || getFullUrl(post.videoUrl)}
-                    className="max-h-[500px] w-full object-contain bg-black"
-                    controls
-                    playsInline
-                    preload="metadata"
-                    onError={(e) => {
-                      console.error("Video loading error:", e);
-                      e.target.src =
-                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlZpZGVvIEZhaWxlZCB0byBMb2FkPC90ZXh0Pjwvc3ZnPg==";
-                    }}
-                  />
-                </div>
-              )}
-
-              {post.imageUrls?.length > 0 && (
-                <div className={`grid ${post.imageUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-                  {post.imageUrls.map((url, index) => {
-                    const mediaId = url.split("/").pop();
-                    return (
-                      <div 
-                        key={index} 
-                        className={`
-                          rounded-lg overflow-hidden shadow-sm border border-green-500 
-                          ${post.imageUrls.length === 1 ? 'col-span-1' : ''} 
-                          ${post.imageUrls.length === 3 && index === 0 ? 'col-span-2' : ''}
-                        `}
-                      >
-                        <img
-                          src={mediaUrls[mediaId] || getFullUrl(url)}
-                          alt={`Post image ${index + 1}`}
-                          className="w-full h-full object-cover max-h-[500px]"
-                          onError={(e) => {
-                            console.error("Image failed to load:", url);
-                            e.target.src =
-                              "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIEZhaWxlZCB0byBMb2FkPC90ZXh0Pjwvc3ZnPg==";
-                          }}
+        </div>
+      ) : (
+        <>
+          {/* Media Content */}
+          <div className="mb-4">
+            {post.videoUrl ? (
+              <video
+                src={mediaUrls.video || getFullUrl(post.videoUrl)}
+                className="w-full aspect-[4/5] object-contain bg-black rounded-xl"
+                controls
+                playsInline
+                preload="metadata"
+                onError={(e) => {
+                  console.error("Video loading error:", e);
+                  e.target.src =
+                    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwJSIgaGViZ2h0PSIxMDAlIiBmaWxsPSIjZTFlMWUxIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5WaWRlbyBGYWlsZWQgdG8gTG9hZDwvdGV4dD4KPC9zdmc+";
+                }}
+              />
+            ) : post.imageUrls?.length > 0 ? (
+              <div className="relative">
+                <img
+                  src={mediaUrls[post.imageUrls[currentImageIndex]?.split("/").pop()] || getFullUrl(post.imageUrls[currentImageIndex])}
+                  alt={`Post image ${currentImageIndex + 1}`}
+                  className="w-full aspect-[4/5] object-cover rounded-xl"
+                  onError={(e) => {
+                    console.error("Image failed to load:", post.imageUrls[currentImageIndex]);
+                    e.target.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTFlMWUxIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBGYWlsZWQgdG8gTG9hZDwvdGV4dD4KPC9zdmc+";
+                  }}
+                />
+                {post.imageUrls.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevImage}
+                      disabled={currentImageIndex === 0}
+                      className={`absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-white ${
+                        currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-black/70"
+                      }`}
+                      aria-label="Previous image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      disabled={currentImageIndex === post.imageUrls.length - 1}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full text-white transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-white ${
+                        currentImageIndex === post.imageUrls.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-black/70"
+                      }`}
+                      aria-label="Next image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1.5">
+                      {post.imageUrls.map((_, index) => (
+                        <span
+                          key={index}
+                          className={`w-2 h-2 rounded-full ${
+                            index === currentImageIndex ? "bg-white" : "bg-gray-400"
+                          }`}
                         />
-                      </div>
-                    );
-                  })}
-                </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Caption */}
+          {post.content && (
+            <div className="mb-4">
+             <p className={`text-sm text-gray-900 ${isExpanded ? "" : "line-clamp-2"}`}>
+                <span className="font-bold">{post.userName || "Unknown User"}:</span> {post.content}
+              </p>
+              {!isExpanded && post.content.length > 100 && (
+                <button
+                  onClick={toggleExpand}
+                  className="text-sm text-gray-500 hover:text-gray-700 mt-1 focus:outline-none"
+                >
+                  See more
+                </button>
               )}
             </div>
-          </>
-        )}
-      </div>
+          )}
 
-      {/* Post Engagement Section */}
-      <div className="px-5 py-3 bg-gray-50 border-t border-green-500">
-        <div className="flex items-center justify-between">
-          {/* Enhanced Like Button with Animation */}
-          <div className="relative">
+          {/* Engagement Section */}
+          <div className="flex items-center space-x-4 mb-4">
             <ReactionButton
               postId={post.id}
               userId={user.id}
-              onReactionChange={handleReactionChange}
+              onReactionchange={handleReactionChange}
               key={`reaction-${lastRefreshed}`}
               renderButton={({ liked, count, onClick, loading }) => (
-                <button 
+                <button
                   onClick={onClick}
                   disabled={loading}
-                  className={`group flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                    liked 
-                      ? 'bg-green-50 text-green-500 hover:bg-green-100' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  aria-label={liked ? "Unlike post" : "Like post"}
                 >
-                  <div className="relative">
-                    <svg 
-                      className={`w-6 h-6 transition-transform duration-300 ${
-                        liked ? 'text-green-500 scale-110' : 'text-gray-400 group-hover:text-gray-500'
-                      }`}
-                      fill={liked ? "currentColor" : "none"} 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={liked ? "0" : "2"} 
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                    
-                    {/* Heart Animation on Click */}
+                  <svg
+                    className={`w-6 h-6 ${liked ? "text-green-600" : "text-gray-600"}`}
+                    fill={liked ? "currentColor" : "none"}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={liked ? "0" : "2"}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
                     {liked && (
-                      <span className="heart-animation absolute inset-0 flex items-center justify-center">
-                        <svg 
-                          className="w-6 h-6 text-green-500 absolute animate-ping opacity-75" 
-                          fill="currentColor" 
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-green-600 animate-ping opacity-75"
+                          fill="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path 
+                          <path
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                           />
                         </svg>
                       </span>
                     )}
-                  </div>
-                  
-                  <span className={`font-medium ${liked ? 'text-green-500' : 'text-gray-700'} transition-colors duration-300`}>
-                    {loading ? (
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      count > 0 ? `${count} ${count === 1 ? 'Like' : 'Likes'}` : 'Like'
-                    )}
-                  </span>
+                  </svg>
+                  {count > 0 && (
+                    <span className="text-sm font-bold text-gray-900 ml-1">{count}</span>
+                  )}
                 </button>
               )}
             />
-          </div>
-
-          <div className="flex items-center space-x-4">
             <button
               onClick={handleCommentClick}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-full transition-colors duration-200 ${
-                showComments
-                  ? "bg-green-100 text-green-600"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className="p-2 rounded-full hover:bg-gray-100 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500"
+              aria-label="View comments"
             >
               <svg
-                className={`w-5 h-5 ${commentCount > 0 ? 'text-green-500' : ''}`}
+                className={`w-6 h-6 ${commentCount > 0 ? "text-green-600" : "text-gray-600"}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -543,19 +558,21 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 />
               </svg>
-              <span className="font-medium">{commentCount}</span>
+              {commentCount > 0 && (
+                <span className="text-sm font-bold text-gray-900 ml-1">{commentCount}</span>
+              )}
             </button>
-            
             {user.id !== post.userId && (
-              <button 
+              <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                className="p-2 rounded-full hover:bg-gray-100 transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500"
+                aria-label="Report post"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-6 h-6 text-gray-600"
                   fill="none"
-                  viewBox="0 0 24 24"
                   stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
                   <path
                     strokeLinecap="round"
@@ -564,41 +581,41 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <span>Report</span>
               </button>
             )}
-            
-            <button className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors duration-200">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                />
-              </svg>
-              <span>Share</span>
-            </button>
           </div>
-        </div>
-      </div>
 
-      {/* Comments Section */}
-      {showComments && (
-        <div className="bg-gray-50 border-t border-gray-100 px-5 py-4">
-          <Comments
-            postId={post.id}
-            postOwnerId={post.userId}
-            showInput={showCommentInput}
-            onCommentCountChange={handleCommentCountChange}
-            key={`comments-${lastRefreshed}`}
-          />
-        </div>
+          {/* Comments Section */}
+          {showComments ? (
+            <div className="bg-gray-50 px-4 py-3 rounded-xl">
+              <Comments
+                postId={post.id}
+                postOwnerId={post.userId}
+                showInput={showCommentInput}
+                onCommentCountChange={handleCommentCountChange}
+                key={`comments-${lastRefreshed}`}
+                maxComments={2} // Show only 2 comments by default
+              />
+              {commentCount > 2 && (
+                <button
+                  onClick={handleCommentClick}
+                  className="text-sm text-gray-500 hover:text-gray-700 mt-2 focus:outline-none"
+                >
+                  {showComments ? "Hide comments" : `View all ${commentCount} comments`}
+                </button>
+              )}
+            </div>
+          ) : commentCount > 0 ? (
+            <div>
+              <button
+                onClick={handleCommentClick}
+                className="text-sm text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                View all {commentCount} comments
+              </button>
+            </div>
+          ) : null}
+        </>
       )}
 
       {/* Report Modal */}
@@ -608,6 +625,23 @@ function Post({ post, onPostDeleted, onPostUpdated }) {
         postId={post.id}
         onSuccess={handleReportSuccess}
       />
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from { transform: translateY(-10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-slide-in {
+          animation: slideIn 0.2s ease-out;
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
