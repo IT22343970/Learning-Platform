@@ -15,6 +15,7 @@ function GroupCard({ group, onUpdate, onDelete }) {
   const [currentUser] = useState(JSON.parse(localStorage.getItem("user")));
   const isOwner = currentUser?.id === group.createdBy;
 
+  //update group
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
