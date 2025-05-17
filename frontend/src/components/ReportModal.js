@@ -45,7 +45,7 @@ function ReportModal({ isOpen, onClose, postId, onSuccess }) {
         reason: selectedReason,
         note: note.trim() || `Reported for ${selectedReason}`
       };
-
+//submit report to backend
       await axiosInstance.post('/api/reports', reportData);
       
       setIsSubmitting(false);
