@@ -49,7 +49,7 @@ function GroupCard({ group, onUpdate, onDelete }) {
       setLoading(false);
     }
   };
-
+//delete group
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this group?")) return;
 
