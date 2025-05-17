@@ -86,7 +86,7 @@ function CreatePost({ onPostCreated }) {
 
     videoElement.src = videoURL;
   };
-
+//submit form data
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
