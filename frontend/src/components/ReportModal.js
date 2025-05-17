@@ -38,7 +38,7 @@ function ReportModal({ isOpen, onClose, postId, onSuccess }) {
     try {
       setIsSubmitting(true);
       setError('');
-
+//construct the report data
       const reportData = {
         postId,
         reporterId: user.id,
