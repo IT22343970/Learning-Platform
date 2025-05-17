@@ -23,7 +23,7 @@ function ReportModal({ isOpen, onClose, postId, onSuccess }) {
     setSelectedReason(reason);
     setStep(2);
   };
-
+//handle report submition 
   const handleSubmit = async () => {
     if (!selectedReason) {
       setError('Please select a reason for reporting');
